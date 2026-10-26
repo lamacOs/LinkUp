@@ -12,6 +12,7 @@ import net.minecraft.resources.Identifier;
 public final class LinkUpClient implements ClientModInitializer {
     public static final String MOD_ID = "linkup";
     private static KeyMapping openMenuKey;
+    private static KeyMapping editHudKey;
 
     @Override
     public void onInitializeClient() {
@@ -21,25 +22,35 @@ public final class LinkUpClient implements ClientModInitializer {
                 Identifier.fromNamespaceAndPath(MOD_ID, "main")
         );
         openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "key.linkup.open_menu",
-                InputConstants.Type.KEYBOARD,
-                InputConstants.KEY_RSHIFT,
-                category
+                "key.linkup.open_menu", InputConstants.Type.KEYBOARD, InputConstants.KEY_RSHIFT, category
+        ));
+        editHudKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.linkup.edit_hud", InputConstants.Type.KEYBOARD, InputConstants.KEY_J, category
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (openMenuKey.consumeClick()) {
-                if (client.gui.screen() == null) {
-                    client.gui.setScreen(new LinkUpScreen());
+            while (editHudKey.consumeClick()) {
+                if (client.gui.screen() instanceof LinkUpHudEditorScreen) {
+                    client.gui.setScreen(null);
+                } else if (client.gui.screen() == null) {
+                    openHudEditor();
                 }
+            }
+            while (openMenuKey.consumeClick()) {
+                if (client.gui.screen() == null) client.gui.setScreen(new LinkUpScreen());
             }
         });
     }
 
+    public static void openHudEditor() {
+        Minecraft client = Minecraft.getInstance();
+        if (client.gui.screen() == null || client.gui.screen() instanceof LinkUpScreen) {
+            client.gui.setScreen(new LinkUpHudEditorScreen());
+        }
+    }
+
     public static void message(String message) {
         Minecraft client = Minecraft.getInstance();
-        if (client.player != null) {
-            client.player.sendSystemMessage(Component.literal("[LinkUp] " + message));
-        }
+        if (client.player != null) client.player.sendSystemMessage(Component.literal("[LinkUp] " + message));
     }
 }
