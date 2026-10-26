@@ -77,7 +77,6 @@ public final class LinkUpScreen extends Screen {
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
         int right = panelLeft + panelWidth;
         int bottom = panelTop + panelHeight;
 
@@ -142,6 +141,8 @@ public final class LinkUpScreen extends Screen {
             wrapped(graphics, "Schalte die Optionen über die Buttons um. Einstellungen werden gespeichert; Funktionen, die noch nicht implementiert sind, bleiben ohne Effekt.", contentLeft, bodyTop + 130, maxTextWidth, 0xFF8FA1B7, 14);
         }
         text(graphics, "LAMACHUB  /  LINKUP", panelLeft + 16, bottom - 19, 0xFF53677F);
+        // Extract widgets last so their interactive button visuals stay above the custom panel.
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
     }
 
     private void card(GuiGraphicsExtractor graphics, int x, int y, int w, int h) {
