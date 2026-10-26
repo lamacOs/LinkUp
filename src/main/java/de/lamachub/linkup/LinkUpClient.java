@@ -22,7 +22,7 @@ public final class LinkUpClient implements ClientModInitializer {
         openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.linkup.open_menu",
                 InputConstants.Type.KEYBOARD,
-                InputConstants.KEY_RIGHT_SHIFT,
+                InputConstants.KEY_RSHIFT,
                 category
         ));
 
