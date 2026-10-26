@@ -1,10 +1,12 @@
 package de.lamachub.linkup;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import org.lwjgl.glfw.GLFW;
 
 public final class LinkUpHudEditorScreen extends Screen {
     private boolean dragging;
@@ -39,27 +41,28 @@ public final class LinkUpHudEditorScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() == 0) {
             Minecraft client = Minecraft.getInstance();
             String coords = client.player == null ? "XYZ 0.0 / 0.0 / 0.0" : LinkUpHud.coordinates(client);
             String nearest = client.player == null ? "" : LinkUpHud.nearestWaypoint(client,
                     client.player.getX(), client.player.getY(), client.player.getZ());
             int x = LinkUpData.hudX, y = LinkUpData.hudY;
             int w = LinkUpHud.hudWidth(client, coords, nearest), h = LinkUpHud.hudHeight(nearest);
-            if (mouseX >= x - 5 && mouseX <= x + w + 2 && mouseY >= y - 5 && mouseY <= y + h + 2) {
+            if (event.x() >= x - 5 && event.x() <= x + w + 2
+                    && event.y() >= y - 5 && event.y() <= y + h + 2) {
                 dragging = true;
-                dragOffsetX = (int) mouseX - x;
-                dragOffsetY = (int) mouseY - y;
+                dragOffsetX = (int) event.x() - x;
+                dragOffsetY = (int) event.y() - y;
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (dragging && button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+    public boolean mouseDragged(MouseButtonEvent event, double mouseX, double mouseY) {
+        if (dragging && event.button() == 0) {
             Minecraft client = Minecraft.getInstance();
             String coords = client.player == null ? "XYZ 0.0 / 0.0 / 0.0" : LinkUpHud.coordinates(client);
             String nearest = client.player == null ? "" : LinkUpHud.nearestWaypoint(client,
@@ -70,26 +73,26 @@ public final class LinkUpHudEditorScreen extends Screen {
                     Math.min(maxY, Math.max(0, (int) mouseY - dragOffsetY)));
             return true;
         }
-        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        return super.mouseDragged(event, mouseX, mouseY);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && dragging) {
+    public boolean mouseReleased(MouseButtonEvent event) {
+        if (event.button() == 0 && dragging) {
             dragging = false;
             LinkUpData.saveSettings();
             return true;
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(event);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_J || keyCode == GLFW.GLFW_KEY_ESCAPE) {
+    public boolean keyPressed(KeyEvent event) {
+        if (event.key() == InputConstants.KEY_J || event.key() == InputConstants.KEY_ESCAPE) {
             onClose();
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override public void onClose() { Minecraft.getInstance().gui.setScreen(null); }
