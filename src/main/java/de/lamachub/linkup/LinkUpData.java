@@ -19,6 +19,8 @@ public final class LinkUpData {
     public static boolean compactHud = true;
     public static boolean chatTimestamps = true;
     public static boolean waypointNotifications = true;
+    public static int hudX = 8;
+    public static int hudY = 8;
     private static String lastNotifiedWaypoint = "";
 
     private LinkUpData() {}
@@ -33,6 +35,8 @@ public final class LinkUpData {
             compactHud = Boolean.parseBoolean(DATA.getProperty("compactHud", "true"));
             chatTimestamps = Boolean.parseBoolean(DATA.getProperty("chatTimestamps", "true"));
             waypointNotifications = Boolean.parseBoolean(DATA.getProperty("waypointNotifications", "true"));
+            hudX = parseInt(DATA.getProperty("hudX"), 8);
+            hudY = parseInt(DATA.getProperty("hudY"), 8);
             for (int i = 0; DATA.containsKey("profile." + i); i++) profiles.add(DATA.getProperty("profile." + i));
             for (int i = 0; DATA.containsKey("waypoint." + i); i++) waypoints.add(DATA.getProperty("waypoint." + i));
         } catch (IOException e) {
@@ -40,11 +44,20 @@ public final class LinkUpData {
         }
     }
 
+    private static int parseInt(String value, int fallback) {
+        try { return Integer.parseInt(value); } catch (RuntimeException ignored) { return fallback; }
+    }
+
+    public static void setHudPosition(int x, int y) {
+        hudX = Math.max(0, x);
+        hudY = Math.max(0, y);
+        DATA.setProperty("hudX", Integer.toString(hudX));
+        DATA.setProperty("hudY", Integer.toString(hudY));
+        persist();
+    }
+
     public static void notifyWaypoint(String waypoint) {
-        if (waypoint == null) {
-            lastNotifiedWaypoint = "";
-            return;
-        }
+        if (waypoint == null) { lastNotifiedWaypoint = ""; return; }
         if (!waypoint.equals(lastNotifiedWaypoint)) {
             lastNotifiedWaypoint = waypoint;
             LinkUpClient.message("Du bist nahe an einem Wegpunkt.");
@@ -58,6 +71,8 @@ public final class LinkUpData {
         DATA.setProperty("compactHud", Boolean.toString(compactHud));
         DATA.setProperty("chatTimestamps", Boolean.toString(chatTimestamps));
         DATA.setProperty("waypointNotifications", Boolean.toString(waypointNotifications));
+        DATA.setProperty("hudX", Integer.toString(hudX));
+        DATA.setProperty("hudY", Integer.toString(hudY));
         persist();
     }
 
