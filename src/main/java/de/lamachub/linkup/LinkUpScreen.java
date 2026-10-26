@@ -2,6 +2,7 @@ package de.lamachub.linkup;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 import java.util.List;
@@ -95,8 +96,11 @@ public final class LinkUpScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
+        if (button != 0) return super.mouseClicked(event, doubleClick);
         int left = Math.max(12, (width - 440) / 2);
         int top = Math.max(12, (height - 300) / 2);
         int bottom = Math.min(height - 12, top + 300);
@@ -124,18 +128,11 @@ public final class LinkUpScreen extends Screen {
             if (mouseY >= contentY + 34 && mouseY <= contentY + 58) LinkUpData.compactHud = !LinkUpData.compactHud;
             else if (mouseY >= contentY + 64 && mouseY <= contentY + 88) LinkUpData.chatTimestamps = !LinkUpData.chatTimestamps;
             else if (mouseY >= contentY + 94 && mouseY <= contentY + 118) LinkUpData.waypointNotifications = !LinkUpData.waypointNotifications;
-            else return super.mouseClicked(mouseX, mouseY, button);
+            else return super.mouseClicked(event, doubleClick);
             LinkUpData.saveSettings();
             return true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        int count = page == 1 ? LinkUpData.profiles().size() : page == 2 ? LinkUpData.waypoints().size() : 0;
-        scroll = Math.max(0, Math.min(Math.max(0, count - 7), scroll + (verticalAmount < 0 ? 1 : -1)));
-        return true;
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override
