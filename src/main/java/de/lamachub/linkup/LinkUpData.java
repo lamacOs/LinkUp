@@ -19,6 +19,7 @@ public final class LinkUpData {
     public static boolean compactHud = true;
     public static boolean chatTimestamps = true;
     public static boolean waypointNotifications = true;
+    private static String lastNotifiedWaypoint = "";
 
     private LinkUpData() {}
 
@@ -36,6 +37,17 @@ public final class LinkUpData {
             for (int i = 0; DATA.containsKey("waypoint." + i); i++) waypoints.add(DATA.getProperty("waypoint." + i));
         } catch (IOException e) {
             System.err.println("[LinkUp] Could not load local settings: " + e.getMessage());
+        }
+    }
+
+    public static void notifyWaypoint(String waypoint) {
+        if (waypoint == null) {
+            lastNotifiedWaypoint = "";
+            return;
+        }
+        if (!waypoint.equals(lastNotifiedWaypoint)) {
+            lastNotifiedWaypoint = waypoint;
+            LinkUpClient.message("Du bist nahe an einem Wegpunkt.");
         }
     }
 
