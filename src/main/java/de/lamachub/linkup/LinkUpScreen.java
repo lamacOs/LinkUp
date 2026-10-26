@@ -1,8 +1,8 @@
 package de.lamachub.linkup;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
@@ -11,12 +11,11 @@ public final class LinkUpScreen extends Screen {
     private int scroll = 0;
 
     public LinkUpScreen() {
-        super(Text.literal("LinkUp"));
+        super(Component.literal("LinkUp"));
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         int left = Math.max(12, (width - 440) / 2);
         int top = Math.max(12, (height - 300) / 2);
         int right = Math.min(width - 12, left + 440);
@@ -25,7 +24,7 @@ public final class LinkUpScreen extends Screen {
         context.fill(left, top, right, bottom, 0xF0181C25);
         context.fill(left, top, right, top + 36, 0xFF222B39);
         context.fill(left, top + 35, right, top + 37, 0xFF01C7FC);
-        context.drawTextWithShadow(textRenderer, "LinkUp", left + 14, top + 12, 0xFF01C7FC);
+        context.text(font, "LinkUp", left + 14, top + 12, 0xFF01C7FC, true);
         context.drawTextWithShadow(textRenderer, "CLIENT DASHBOARD  •  Minecraft 26.3", left + 92, top + 12, 0xFFE3EAF2);
 
         int navY = top + 52;
@@ -74,7 +73,7 @@ public final class LinkUpScreen extends Screen {
         }
 
         context.drawTextWithShadow(textRenderer, "ESC  •  Schließen", left + 14, bottom - 17, 0xFF9BA8B8);
-        super.render(context, mouseX, mouseY, delta);
+        super.extractRenderState(context, mouseX, mouseY, delta);
     }
 
     private void line(DrawContext context, int x, int y, String text, int color) {
@@ -137,5 +136,5 @@ public final class LinkUpScreen extends Screen {
     }
 
     @Override
-    public boolean shouldPause() { return false; }
+    public boolean isPauseScreen() { return false; }
 }
