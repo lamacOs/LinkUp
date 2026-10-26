@@ -10,160 +10,145 @@ import java.util.List;
 public final class LinkUpScreen extends Screen {
     private int page = 0;
     private int scroll = 0;
-    private int panelLeft;
-    private int panelTop;
-    private int panelWidth;
-    private int panelHeight;
-    private int contentLeft;
-    private int contentWidth;
-
+    private int left, top, panelWidth, panelHeight, contentLeft, contentWidth, bodyTop, bodyBottom;
     private static final String[] PAGES = {"Übersicht", "Profile", "Wegpunkte", "Einstellungen"};
 
-    public LinkUpScreen() {
-        super(Component.literal("LinkUp"));
-    }
+    public LinkUpScreen() { super(Component.literal("LinkUp")); }
 
     @Override
     protected void init() {
         clearWidgets();
-        panelWidth = Math.min(620, width - 24);
-        panelHeight = Math.min(390, height - 24);
-        panelLeft = (width - panelWidth) / 2;
-        panelTop = (height - panelHeight) / 2;
-        int sidebarWidth = Math.min(142, Math.max(104, panelWidth / 4));
-        contentLeft = panelLeft + sidebarWidth + 18;
-        contentWidth = Math.max(90, panelWidth - sidebarWidth - 34);
+        panelWidth = Math.max(260, Math.min(660, width - 20));
+        panelHeight = Math.max(180, Math.min(420, height - 20));
+        left = (width - panelWidth) / 2;
+        top = (height - panelHeight) / 2;
+        int sidebar = Math.min(142, Math.max(88, panelWidth / 4));
+        contentLeft = left + sidebar + 18;
+        contentWidth = Math.max(90, left + panelWidth - 16 - contentLeft);
+        bodyTop = top + 96;
+        bodyBottom = top + panelHeight - 48;
 
-        int navY = panelTop + 65;
+        int navY = top + 62;
+        int navW = sidebar - 20;
         for (int i = 0; i < PAGES.length; i++) {
             final int target = i;
-            addRenderableWidget(Button.builder(Component.literal((page == i ? "◆  " : "   ") + PAGES[i]), b -> {
-                page = target;
-                scroll = 0;
-                rebuildWidgets();
-            }).bounds(panelLeft + 10, navY + i * 34, sidebarWidth - 20, 28).build());
+            addRenderableWidget(Button.builder(Component.literal((page == i ? "◆ " : "  ") + PAGES[i]), b -> {
+                page = target; scroll = 0; rebuildWidgets();
+            }).bounds(left + 10, navY + i * 32, navW, 27).build());
         }
 
-        int bodyTop = panelTop + 82;
-        int buttonY = panelTop + panelHeight - 48;
         if (page == 0) {
-            int half = Math.max(80, (contentWidth - 8) / 2);
-            addButton("Hotbar sichern", contentLeft, buttonY, half, () -> LinkUpData.saveHotbarProfile());
-            addButton("Wegpunkt setzen", contentLeft + half + 8, buttonY, half, () -> LinkUpData.saveWaypoint());
+            addFooterButton("Hotbar sichern", contentLeft, contentWidth / 2 - 4, () -> LinkUpData.saveHotbarProfile());
+            addFooterButton("Wegpunkt setzen", contentLeft + contentWidth / 2 + 4, contentWidth / 2 - 4, () -> LinkUpData.saveWaypoint());
         } else if (page == 1) {
-            addButton("Hotbar-Profil speichern", contentLeft, buttonY, Math.min(contentWidth, 220), () -> LinkUpData.saveHotbarProfile());
-            addButton("Zurück nach oben", contentLeft + Math.min(contentWidth, 228), buttonY, Math.max(80, contentWidth - 228), () -> { scroll = 0; rebuildWidgets(); });
+            addFooterButton("Hotbar-Profil speichern", contentLeft, contentWidth, () -> LinkUpData.saveHotbarProfile());
         } else if (page == 2) {
-            addButton("Aktuelle Position speichern", contentLeft, buttonY, Math.min(contentWidth, 240), () -> LinkUpData.saveWaypoint());
-            addButton("Liste nach oben", contentLeft + Math.min(contentWidth, 248), buttonY, Math.max(80, contentWidth - 248), () -> { scroll = 0; rebuildWidgets(); });
+            addFooterButton("Aktuelle Position speichern", contentLeft, contentWidth, () -> LinkUpData.saveWaypoint());
         } else {
-            addButton("Kompaktes HUD: " + (LinkUpData.compactHud ? "AN" : "AUS"), contentLeft, bodyTop, contentWidth, () -> {
+            addScrollButton("Kompaktes HUD: " + (LinkUpData.compactHud ? "AN" : "AUS"), 0, () -> {
                 LinkUpData.compactHud = !LinkUpData.compactHud; LinkUpData.saveSettings(); rebuildWidgets();
             });
-            addButton("Chat-Zeitstempel: " + (LinkUpData.chatTimestamps ? "AN" : "AUS"), contentLeft, bodyTop + 42, contentWidth, () -> {
+            addScrollButton("Chat-Zeitstempel: " + (LinkUpData.chatTimestamps ? "AN" : "AUS"), 42, () -> {
                 LinkUpData.chatTimestamps = !LinkUpData.chatTimestamps; LinkUpData.saveSettings(); rebuildWidgets();
             });
-            addButton("Wegpunkt-Hinweise: " + (LinkUpData.waypointNotifications ? "AN" : "AUS"), contentLeft, bodyTop + 84, contentWidth, () -> {
+            addScrollButton("Wegpunkt-Hinweise: " + (LinkUpData.waypointNotifications ? "AN" : "AUS"), 84, () -> {
                 LinkUpData.waypointNotifications = !LinkUpData.waypointNotifications; LinkUpData.saveSettings(); rebuildWidgets();
             });
+            addScrollButton("HUD mit J verschieben", 126, () -> LinkUpClient.openHudEditor());
         }
     }
 
-    private void addButton(String label, int x, int y, int buttonWidth, Runnable action) {
-        int safeWidth = Math.max(70, Math.min(buttonWidth, panelLeft + panelWidth - 12 - x));
+    private void addFooterButton(String label, int x, int w, Runnable action) {
+        int y = top + panelHeight - 38;
+        if (w < 70 || y < top || y + 24 > top + panelHeight) return;
         addRenderableWidget(Button.builder(Component.literal(label), b -> action.run())
-                .bounds(x, y, safeWidth, 28).build());
+                .bounds(x, y, Math.min(w, left + panelWidth - 12 - x), 24).build());
+    }
+
+    private void addScrollButton(String label, int offset, Runnable action) {
+        int y = bodyTop + offset - scroll;
+        if (y < bodyTop || y + 26 > bodyBottom) return;
+        addRenderableWidget(Button.builder(Component.literal(label), b -> action.run())
+                .bounds(contentLeft, y, contentWidth, 24).build());
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        int right = panelLeft + panelWidth;
-        int bottom = panelTop + panelHeight;
+    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
+        int right = left + panelWidth, bottom = top + panelHeight;
+        g.fill(0, 0, width, height, 0x99050A12);
+        g.fill(left, top, right, bottom, 0xF0121824);
+        g.fill(left, top, right, top + 46, 0xFF1B2636);
+        g.fill(left, top, left + 3, bottom, 0xFF01C7FC);
+        g.fill(left + 3, top + 45, right, top + 47, 0xFF01C7FC);
+        text(g, "LinkUp", left + 16, top + 12, 0xFF01C7FC);
+        text(g, "CLIENT  /  MINECRAFT 26.3", left + 96, top + 14, 0xFFB7C6D9);
+        text(g, "RSHIFT  •  ESC", right - 100, top + 14, 0xFF7F91A8);
+        int sidebar = Math.min(142, Math.max(88, panelWidth / 4));
+        g.fill(left + 8, top + 54, left + sidebar, bottom - 10, 0xFF151E2B);
+        g.fill(left + sidebar + 7, top + 57, left + sidebar + 8, bottom - 12, 0xFF303D50);
+        text(g, "WORKSPACE", left + 16, top + 54, 0xFF6E839B);
+        text(g, PAGES[page].toUpperCase(), contentLeft, top + 57, 0xFFFFFFFF);
+        g.fill(contentLeft, top + 75, right - 16, top + 76, 0xFF303D50);
 
-        // Premium dark panel with cyan accent and layered sections.
-        graphics.fill(0, 0, width, height, 0x88050A12);
-        graphics.fill(panelLeft, panelTop, right, bottom, 0xF0121824);
-        graphics.fill(panelLeft, panelTop, right, panelTop + 48, 0xFF1B2636);
-        graphics.fill(panelLeft, panelTop, panelLeft + 3, bottom, 0xFF01C7FC);
-        graphics.fill(panelLeft + 3, panelTop + 47, right, panelTop + 49, 0xFF01C7FC);
-        text(graphics, "LinkUp", panelLeft + 18, panelTop + 13, 0xFF01C7FC);
-        text(graphics, "CLIENT  /  MINECRAFT 26.3", panelLeft + 100, panelTop + 15, 0xFFB7C6D9);
-        text(graphics, "RIGHT SHIFT  •  ESC ZUM SCHLIESSEN", right - 220, panelTop + 16, 0xFF7F91A8);
-
-        int sidebarWidth = Math.min(142, Math.max(104, panelWidth / 4));
-        graphics.fill(panelLeft + 8, panelTop + 55, panelLeft + sidebarWidth, bottom - 10, 0xFF151E2B);
-        int dividerX = panelLeft + sidebarWidth + 7;
-        graphics.fill(dividerX, panelTop + 58, dividerX + 1, bottom - 12, 0xFF303D50);
-
-        text(graphics, "WORKSPACE", panelLeft + 18, panelTop + 55, 0xFF6E839B);
-        text(graphics, PAGES[page].toUpperCase(), contentLeft, panelTop + 58, 0xFFFFFFFF);
-        graphics.fill(contentLeft, panelTop + 76, right - 16, panelTop + 77, 0xFF303D50);
-
-        int bodyTop = panelTop + 92;
-        int maxTextWidth = Math.max(70, contentWidth);
         if (page == 0) {
-            text(graphics, "Dein Client. Dein Setup.", contentLeft, bodyTop, 0xFF01C7FC);
-            wrapped(graphics, "Ein aufgeräumtes Kontrollzentrum für deine lokalen Client-Werkzeuge. Deine gespeicherten Daten bleiben auf diesem Gerät.", contentLeft, bodyTop + 22, maxTextWidth, 0xFFE0E8F2, 14);
-            card(graphics, contentLeft, bodyTop + 84, maxTextWidth, 46);
-            text(graphics, "HOTBAR-PROFILE", contentLeft + 12, bodyTop + 94, 0xFF01C7FC);
-            text(graphics, "Speichert die neun aktuellen Slots als Snapshot.", contentLeft + 12, bodyTop + 111, 0xFFB7C6D9);
-            card(graphics, contentLeft, bodyTop + 138, maxTextWidth, 46);
-            text(graphics, "WEGPUNKTE", contentLeft + 12, bodyTop + 148, 0xFFFFC46B);
-            text(graphics, "Positionen sichern und Entfernung im HUD sehen.", contentLeft + 12, bodyTop + 165, 0xFFB7C6D9);
-            wrapped(graphics, "Hinweis: Ein Snapshot sortiert dein Inventar noch nicht automatisch. Online-Social und KI-Chat sind noch nicht enthalten.", contentLeft, bodyTop + 198, maxTextWidth, 0xFF9AA9BC, 13);
-        } else if (page == 1) {
-            List<String> entries = LinkUpData.profiles();
+            drawWrapped(g, "Dein Client. Dein Setup.", contentLeft, bodyTop - scroll, contentWidth, 0xFF01C7FC, 14);
+            drawWrapped(g, "Ein aufgeräumtes Kontrollzentrum für deine lokalen Client-Werkzeuge. Deine Daten bleiben auf diesem Gerät.", contentLeft, bodyTop + 24 - scroll, contentWidth, 0xFFE0E8F2, 14);
+            drawCard(g, contentLeft, bodyTop + 82 - scroll, contentWidth, 42);
+            drawWrapped(g, "HOTBAR-PROFILE", contentLeft + 10, bodyTop + 91 - scroll, contentWidth - 20, 0xFF01C7FC, 14);
+            drawWrapped(g, "Speichert die neun aktuellen Slots als Snapshot.", contentLeft + 10, bodyTop + 106 - scroll, contentWidth - 20, 0xFFB7C6D9, 13);
+            drawCard(g, contentLeft, bodyTop + 132 - scroll, contentWidth, 42);
+            drawWrapped(g, "WEGPUNKTE", contentLeft + 10, bodyTop + 141 - scroll, contentWidth - 20, 0xFFFFC46B, 14);
+            drawWrapped(g, "Positionen sichern und Entfernung im HUD sehen.", contentLeft + 10, bodyTop + 156 - scroll, contentWidth - 20, 0xFFB7C6D9, 13);
+            drawWrapped(g, "Tipp: Mit J kannst du das HUD verschieben. Mausrad scrollt durch Inhalte.", contentLeft, bodyTop + 190 - scroll, contentWidth, 0xFF9AA9BC, 13);
+        } else if (page == 1 || page == 2) {
+            List<String> entries = page == 1 ? LinkUpData.profiles() : LinkUpData.waypoints();
             if (entries.isEmpty()) {
-                text(graphics, "Noch keine Profile gespeichert.", contentLeft, bodyTop, 0xFFB7C6D9);
-                wrapped(graphics, "Wechsle zur Übersicht und wähle „Hotbar sichern“, um den aktuellen Inhalt deiner Hotbar lokal zu speichern.", contentLeft, bodyTop + 22, maxTextWidth, 0xFF8FA1B7, 14);
+                drawWrapped(g, page == 1 ? "Noch keine Profile gespeichert." : "Noch keine Wegpunkte gespeichert.", contentLeft, bodyTop - scroll, contentWidth, 0xFFB7C6D9, 14);
+                drawWrapped(g, page == 1 ? "Unten „Hotbar-Profil speichern“ wählen." : "Unten „Aktuelle Position speichern“ wählen.", contentLeft, bodyTop + 24 - scroll, contentWidth, 0xFF8FA1B7, 13);
             } else {
-                int y = bodyTop;
-                for (int i = scroll; i < Math.min(entries.size(), scroll + 5); i++) {
-                    card(graphics, contentLeft, y, maxTextWidth, 34);
-                    wrapped(graphics, entries.get(i), contentLeft + 8, y + 10, maxTextWidth - 16, 0xFFE0E8F2, 13);
-                    y += 39;
-                }
-            }
-        } else if (page == 2) {
-            List<String> entries = LinkUpData.waypoints();
-            if (entries.isEmpty()) {
-                text(graphics, "Noch keine Wegpunkte.", contentLeft, bodyTop, 0xFFB7C6D9);
-                wrapped(graphics, "Speichere deine aktuelle Position über „Wegpunkt setzen“. Die Position wird lokal abgelegt.", contentLeft, bodyTop + 22, maxTextWidth, 0xFF8FA1B7, 14);
-            } else {
-                int y = bodyTop;
-                for (int i = scroll; i < Math.min(entries.size(), scroll + 5); i++) {
-                    card(graphics, contentLeft, y, maxTextWidth, 34);
-                    wrapped(graphics, entries.get(i), contentLeft + 8, y + 10, maxTextWidth - 16, 0xFFE0E8F2, 13);
-                    y += 39;
+                int y = bodyTop - scroll;
+                for (String entry : entries) {
+                    int lines = Math.max(1, font.split(Component.literal(entry), Math.max(30, contentWidth - 16)).size());
+                    int h = Math.max(34, lines * 13 + 12);
+                    if (y + h >= bodyTop && y <= bodyBottom) {
+                        drawCard(g, contentLeft, y, contentWidth, h);
+                        drawWrapped(g, entry, contentLeft + 8, y + 8, contentWidth - 16, 0xFFE0E8F2, 13);
+                    }
+                    y += h + 5;
                 }
             }
         } else {
-            wrapped(graphics, "Schalte die Optionen über die Buttons um. Einstellungen werden gespeichert; Funktionen, die noch nicht implementiert sind, bleiben ohne Effekt.", contentLeft, bodyTop + 130, maxTextWidth, 0xFF8FA1B7, 14);
+            drawWrapped(g, "Scrolle mit dem Mausrad durch die Einstellungen. Änderungen werden lokal gespeichert.", contentLeft, bodyTop - scroll, contentWidth, 0xFF9AA9BC, 13);
         }
-        text(graphics, "LAMACHUB  /  LINKUP", panelLeft + 16, bottom - 19, 0xFF53677F);
-        // Extract widgets last so their interactive button visuals stay above the custom panel.
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        text(g, "LAMACHUB / LINKUP", left + 14, bottom - 18, 0xFF53677F);
+        text(g, "MAUSRAD = SCROLLEN", right - 150, bottom - 18, 0xFF53677F);
+        super.extractRenderState(g, mouseX, mouseY, delta);
     }
 
-    private void card(GuiGraphicsExtractor graphics, int x, int y, int w, int h) {
-        graphics.fill(x, y, x + w, y + h, 0xFF1B2635);
-        graphics.fill(x, y, x + 2, y + h, 0xFF30475F);
+    private void drawCard(GuiGraphicsExtractor g, int x, int y, int w, int h) {
+        if (y + h < bodyTop || y > bodyBottom) return;
+        g.fill(x, Math.max(bodyTop, y), x + w, Math.min(bodyBottom, y + h), 0xFF1B2635);
+        g.fill(x, Math.max(bodyTop, y), x + 2, Math.min(bodyBottom, y + h), 0xFF30475F);
     }
 
-    private void text(GuiGraphicsExtractor graphics, String value, int x, int y, int color) {
-        graphics.text(font, value, x, y, color, true);
+    private void text(GuiGraphicsExtractor g, String s, int x, int y, int color) {
+        if (y >= bodyTop - 15 && y <= bodyBottom) g.text(font, s, x, y, color, true);
+        else if (y < top + 48 || y > top + panelHeight - 24) g.text(font, s, x, y, color, true);
     }
 
-    private void wrapped(GuiGraphicsExtractor graphics, String value, int x, int y, int maxWidth, int color, int lineHeight) {
-        int safeWidth = Math.max(20, maxWidth);
-        for (var line : font.split(Component.literal(value), safeWidth)) {
-            graphics.text(font, line, x, y, color, true);
+    private void drawWrapped(GuiGraphicsExtractor g, String value, int x, int y, int maxWidth, int color, int lineHeight) {
+        for (var line : font.split(Component.literal(value), Math.max(24, maxWidth))) {
+            if (y >= bodyTop && y + lineHeight <= bodyBottom) g.text(font, line, x, y, color, true);
             y += lineHeight;
         }
     }
 
     @Override
-    public boolean isPauseScreen() {
-        return false;
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        scroll = Math.max(0, Math.min(5000, scroll - (int)(verticalAmount * 24)));
+        rebuildWidgets();
+        return true;
     }
+
+    @Override public boolean isPauseScreen() { return false; }
 }
