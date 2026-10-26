@@ -1,37 +1,24 @@
 package de.lamachub.linkup;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import org.lwjgl.glfw.GLFW;
 
 public final class LinkUpClient implements ClientModInitializer {
     public static final String MOD_ID = "linkup";
-    private static KeyMapping openMenuKey;
+    private static boolean rightShiftWasDown;
 
     @Override
     public void onInitializeClient() {
         LinkUpData.load();
-        KeyMapping.Category category = KeyMapping.Category.register(
-                Identifier.fromNamespaceAndPath(MOD_ID, "main")
-        );
-        openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "key.linkup.open_menu",
-                InputConstants.Type.KEYSYM,
-                InputConstants.KEY_RIGHT_SHIFT,
-                category
-        ));
-
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (openMenuKey.consumeClick()) {
-                if (client.screen == null) {
-                    client.gui.setScreen(new LinkUpScreen());
-                }
+            boolean rightShiftDown = GLFW.glfwGetKey(client.getWindow().getWindow(), GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;
+            if (rightShiftDown && !rightShiftWasDown && client.gui.screen() == null) {
+                client.gui.setScreen(new LinkUpScreen());
             }
+            rightShiftWasDown = rightShiftDown;
         });
     }
 
