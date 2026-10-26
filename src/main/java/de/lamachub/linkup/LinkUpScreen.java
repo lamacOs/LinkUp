@@ -18,7 +18,7 @@ public final class LinkUpScreen extends Screen {
     @Override
     protected void init() {
         clearWidgets();
-        panelWidth = Math.max(260, Math.min(660, width - 20));
+        panelWidth = Math.max(200, Math.min(660, width - 20));
         panelHeight = Math.max(180, Math.min(420, height - 20));
         left = (width - panelWidth) / 2;
         top = (height - panelHeight) / 2;
@@ -145,7 +145,8 @@ public final class LinkUpScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        scroll = Math.max(0, Math.min(5000, scroll - (int)(verticalAmount * 24)));
+        int maxScroll = page == 3 ? 126 : page == 0 ? 190 : 5000;
+        scroll = Math.max(0, Math.min(maxScroll, scroll - (int)(verticalAmount * 24)));
         rebuildWidgets();
         return true;
     }
