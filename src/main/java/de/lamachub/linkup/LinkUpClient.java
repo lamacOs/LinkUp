@@ -16,6 +16,7 @@ public final class LinkUpClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         LinkUpData.load();
+        LinkUpHud.register();
         KeyMapping.Category category = KeyMapping.Category.register(
                 Identifier.fromNamespaceAndPath(MOD_ID, "main")
         );
