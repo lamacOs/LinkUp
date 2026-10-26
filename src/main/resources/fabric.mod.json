@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "linkup",
+  "version": "${version}",
+  "name": "LinkUp",
+  "description": "An in-game client-style quality-of-life dashboard for Minecraft.",
+  "authors": ["lamacOs"],
+  "contact": {
+    "sources": "https://github.com/lamacOs/LinkUp"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "de.lamachub.linkup.LinkUpClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
