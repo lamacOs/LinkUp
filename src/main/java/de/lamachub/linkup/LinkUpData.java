@@ -69,7 +69,7 @@ public final class LinkUpData {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || client.level == null) return;
         var p = client.player.position();
-        String dimension = client.level.dimension().location().toString();
+        String dimension = client.level.dimension().toString();
         String waypoint = String.format(Locale.ROOT, "%s @ %.1f, %.1f, %.1f", dimension, p.x, p.y, p.z);
         waypoints.add(waypoint);
         rebuildList("waypoint.", waypoints);
