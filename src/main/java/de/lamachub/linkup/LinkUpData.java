@@ -53,7 +53,6 @@ public final class LinkUpData {
         hudY = Math.max(0, y);
         DATA.setProperty("hudX", Integer.toString(hudX));
         DATA.setProperty("hudY", Integer.toString(hudY));
-        persist();
     }
 
     public static void notifyWaypoint(String waypoint) {
