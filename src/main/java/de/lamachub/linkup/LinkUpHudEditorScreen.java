@@ -75,7 +75,11 @@ public final class LinkUpHudEditorScreen extends Screen {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) dragging = false;
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && dragging) {
+            dragging = false;
+            LinkUpData.saveSettings();
+            return true;
+        }
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
