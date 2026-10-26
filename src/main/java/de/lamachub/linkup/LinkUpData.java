@@ -1,13 +1,14 @@
 package de.lamachub.linkup;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.ItemStack;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
 public final class LinkUpData {
@@ -22,7 +23,7 @@ public final class LinkUpData {
     private LinkUpData() {}
 
     public static void load() {
-        file = MinecraftClient.getInstance().runDirectory.toPath().resolve("config").resolve("linkup.properties");
+        file = Minecraft.getInstance().gameDirectory.toPath().resolve("config").resolve("linkup.properties");
         try {
             Files.createDirectories(file.getParent());
             if (Files.exists(file)) {
@@ -49,14 +50,14 @@ public final class LinkUpData {
     }
 
     public static void saveHotbarProfile() {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
         StringBuilder profile = new StringBuilder("Hotbar ");
         for (int slot = 0; slot < 9; slot++) {
             if (slot > 0) profile.append(" | ");
-            ItemStack stack = client.player.getInventory().getStack(slot);
+            ItemStack stack = client.player.getInventory().getItem(slot);
             profile.append(slot + 1).append(":");
-            profile.append(stack.isEmpty() ? "leer" : stack.getName().getString() + " x" + stack.getCount());
+            profile.append(stack.isEmpty() ? "leer" : stack.getHoverName().getString() + " x" + stack.getCount());
         }
         profiles.add(profile.toString());
         rebuildList("profile.", profiles);
@@ -65,11 +66,11 @@ public final class LinkUpData {
     }
 
     public static void saveWaypoint() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player == null || client.world == null) return;
-        var p = client.player.getEntityPos();
-        String dimension = client.world.getRegistryKey().getValue().toString();
-        String waypoint = String.format(java.util.Locale.ROOT, "%s @ %.1f, %.1f, %.1f", dimension, p.x, p.y, p.z);
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null || client.level == null) return;
+        var p = client.player.position();
+        String dimension = client.level.dimension().location().toString();
+        String waypoint = String.format(Locale.ROOT, "%s @ %.1f, %.1f, %.1f", dimension, p.x, p.y, p.z);
         waypoints.add(waypoint);
         rebuildList("waypoint.", waypoints);
         persist();
