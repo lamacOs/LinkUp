@@ -22,26 +22,29 @@ public final class LinkUpHud {
     private static void render(GuiGraphicsExtractor graphics, net.minecraft.client.DeltaTracker tickCounter) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || client.level == null) return;
-
-        var position = client.player.position();
-        String coordinates = String.format(Locale.ROOT, "XYZ %.1f / %.1f / %.1f", position.x, position.y, position.z);
-        String nearest = nearestWaypoint(client, position.x, position.y, position.z);
-        String status = "LinkUp";
-        int x = 8;
-        int y = 8;
-        int width = Math.max(client.font.width(coordinates), Math.max(client.font.width(nearest), client.font.width(status))) + 12;
-        int height = nearest.isEmpty() ? 30 : 42;
+        String coordinates = coordinates(client);
+        String nearest = nearestWaypoint(client, client.player.getX(), client.player.getY(), client.player.getZ());
+        int x = LinkUpData.hudX;
+        int y = LinkUpData.hudY;
+        int width = hudWidth(client, coordinates, nearest);
+        int height = hudHeight(nearest);
 
         if (LinkUpData.compactHud) {
             graphics.fill(x - 3, y - 3, x + width, y + height, 0x990E141D);
             graphics.fill(x - 3, y - 3, x, y + height, 0xFF01C7FC);
         }
-        graphics.text(client.font, status, x + 3, y, 0xFF01C7FC, true);
+        graphics.text(client.font, "LinkUp", x + 3, y, 0xFF01C7FC, true);
         graphics.text(client.font, coordinates, x + 3, y + 12, 0xFFE3EAF2, true);
         if (!nearest.isEmpty()) graphics.text(client.font, nearest, x + 3, y + 24, 0xFFFFC46B, true);
     }
 
-    private static String nearestWaypoint(Minecraft client, double x, double y, double z) {
+    public static String coordinates(Minecraft client) {
+        var p = client.player.position();
+        return String.format(Locale.ROOT, "XYZ %.1f / %.1f / %.1f", p.x, p.y, p.z);
+    }
+
+    public static String nearestWaypoint(Minecraft client, double x, double y, double z) {
+        if (client.level == null) return "";
         String currentDimension = client.level.dimension().toString();
         String nearest = "";
         double nearestDistance = Double.MAX_VALUE;
@@ -59,13 +62,18 @@ public final class LinkUpHud {
                     nearestDistance = distance;
                     nearest = String.format(Locale.ROOT, "Wegpunkt: %.0f m", distance);
                 }
-                if (LinkUpData.waypointNotifications && distance <= 5.0) {
-                    LinkUpData.notifyWaypoint(waypoint);
-                }
+                if (LinkUpData.waypointNotifications && distance <= 5.0) LinkUpData.notifyWaypoint(waypoint);
             } catch (NumberFormatException ignored) {
                 // Ignore old or malformed saved waypoint entries.
             }
         }
         return nearest;
     }
+
+    public static int hudWidth(Minecraft client, String coordinates, String nearest) {
+        int width = Math.max(client.font.width(coordinates), Math.max(client.font.width(nearest), client.font.width("LinkUp"))) + 12;
+        return width;
+    }
+
+    public static int hudHeight(String nearest) { return nearest.isEmpty() ? 30 : 42; }
 }
