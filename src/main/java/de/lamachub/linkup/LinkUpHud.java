@@ -21,7 +21,7 @@ public final class LinkUpHud {
 
     private static void render(GuiGraphicsExtractor graphics, net.minecraft.client.DeltaTracker tickCounter) {
         Minecraft client = Minecraft.getInstance();
-        if (client.player == null || client.level == null || client.options.hideGui) return;
+        if (client.player == null || client.level == null) return;
 
         var position = client.player.position();
         String coordinates = String.format(Locale.ROOT, "XYZ %.1f / %.1f / %.1f", position.x, position.y, position.z);
